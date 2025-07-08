@@ -6,6 +6,7 @@ from password_checker import PasswordStrengthChecker
 
 try:
     from colorama import init, Fore, Style
+
     init()
     COLORS_AVAILABLE = True
 except ImportError:
@@ -15,64 +16,63 @@ except ImportError:
 def colorize_strength(strength: str, text: str) -> str:
     if not COLORS_AVAILABLE:
         return text
-    
+
     color_map = {
-        'Very Strong': Fore.GREEN,
-        'Strong': Fore.LIGHTGREEN_EX,
-        'Moderate': Fore.YELLOW,
-        'Weak': Fore.LIGHTYELLOW_EX,
-        'Very Weak': Fore.RED
+        "Very Strong": Fore.GREEN,
+        "Strong": Fore.LIGHTGREEN_EX,
+        "Moderate": Fore.YELLOW,
+        "Weak": Fore.LIGHTYELLOW_EX,
+        "Very Weak": Fore.RED,
     }
-    
-    color = color_map.get(strength, '')
+
+    color = color_map.get(strength, "")
     return f"{color}{text}{Style.RESET_ALL}"
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Check password strength and security',
+        description="Check password strength and security",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog='''
+        epilog="""
 Examples:
   %(prog)s                    # Interactive mode (recommended)
   %(prog)s -p mypassword      # Check specific password
   %(prog)s --batch            # Batch mode for multiple passwords
   %(prog)s --help             # Show this help
-        '''
+        """,
     )
-    
+
     parser.add_argument(
-        '-p', '--password',
-        help='Password to check (not recommended for security reasons)'
+        "-p",
+        "--password",
+        help="Password to check (not recommended for security reasons)",
     )
-    
+
     parser.add_argument(
-        '--batch',
-        action='store_true',
-        help='Check multiple passwords (one per line, Ctrl+D to finish)'
+        "--batch",
+        action="store_true",
+        help="Check multiple passwords (one per line, Ctrl+D to finish)",
     )
-    
+
     parser.add_argument(
-        '--no-color',
-        action='store_true',
-        help='Disable colored output'
+        "--no-color", action="store_true", help="Disable colored output"
     )
-    
+
     parser.add_argument(
-        '--score-only',
-        action='store_true',
-        help='Output only the numeric score (0-100)'
+        "--score-only",
+        action="store_true",
+        help="Output only the numeric score (0-100)",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Disable colors if requested
     global COLORS_AVAILABLE
     if args.no_color:
         COLORS_AVAILABLE = False
-    
+
     checker = PasswordStrengthChecker()
-    
+
     if args.batch:
         handle_batch_mode(checker, args.score_only)
     elif args.password:
@@ -97,7 +97,7 @@ def handle_interactive_mode(checker, score_only):
     print("=" * 50)
     print("Enter a password to check its strength (input will be hidden)")
     print("Press Ctrl+C to exit\n")
-    
+
     try:
         while True:
             try:
@@ -105,7 +105,7 @@ def handle_interactive_mode(checker, score_only):
                 if not password:
                     print("Please enter a password\n")
                     continue
-                
+
                 if score_only:
                     _, score, _ = checker.calculate_strength(password)
                     print(f"Score: {score}")
@@ -114,12 +114,12 @@ def handle_interactive_mode(checker, score_only):
                     strength, score, _ = checker.calculate_strength(password)
                     colored_report = colorize_strength(strength, report)
                     print(colored_report)
-                
+
                 print("\n" + "-" * 50 + "\n")
-                
+
             except EOFError:
                 break
-                
+
     except KeyboardInterrupt:
         print("\nGoodbye!")
         sys.exit(0)
@@ -128,7 +128,7 @@ def handle_interactive_mode(checker, score_only):
 def handle_batch_mode(checker, score_only):
     print("Batch mode: Enter passwords (one per line), Ctrl+D when done")
     print("-" * 50)
-    
+
     try:
         passwords = []
         while True:
@@ -138,11 +138,11 @@ def handle_batch_mode(checker, score_only):
                     passwords.append(password)
             except EOFError:
                 break
-        
+
         if not passwords:
             print("No passwords entered.")
             return
-        
+
         for i, password in enumerate(passwords, 1):
             if score_only:
                 _, score, _ = checker.calculate_strength(password)
@@ -154,11 +154,11 @@ def handle_batch_mode(checker, score_only):
                 colored_report = colorize_strength(strength, report)
                 print(colored_report)
                 print("-" * 50)
-                
+
     except KeyboardInterrupt:
         print("\nOperation cancelled.")
         sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
